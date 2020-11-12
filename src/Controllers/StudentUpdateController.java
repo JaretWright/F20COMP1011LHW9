@@ -3,6 +3,8 @@ package Controllers;
 import Models.Course;
 import Models.Student;
 import Utilities.MagicData;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -65,6 +67,27 @@ public class StudentUpdateController implements Initializable {
         avgGradeCol.setCellValueFactory(new PropertyValueFactory<>("avgGradeString"));
         numOfCoursesCol.setCellValueFactory(new PropertyValueFactory<>("numOfCourses"));
         System.out.println(tableView.getItems().addAll(allStudents));
+
+        //configure the search textfield to filter the objects in the
+        //tableview
+        searchTextField.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observableValue,
+                                String oldString, String searchText) {
+
+                ArrayList<Student> filtered = new ArrayList<>();
+                for (Student student:allStudents)
+                {
+                    if (student.contains(searchText))
+                        filtered.add(student);
+                }
+
+                //clear the ObservableList from the tableview and add in ONLY
+                //the filtered students
+                tableView.getItems().clear();
+                tableView.getItems().addAll(filtered);
+            }
+        });
 
         //Configure the combobox
         coursesComboBox.setPromptText("Select a course");

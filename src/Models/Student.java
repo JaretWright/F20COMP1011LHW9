@@ -108,6 +108,18 @@ public class Student
     {
         return courses.size();
     }
+    /**
+     * This method returns true if the searchText is found
+     * within the student number, the first name or last name
+     */
+    public boolean contains(String searchText)
+    {
+        String studentNumberString = Integer.toString(studNum);
+        searchText = searchText.toLowerCase();
+        return firstName.toLowerCase().contains(searchText) ||
+                lastName.toLowerCase().contains(searchText) ||
+                studentNumberString.contains(searchText);
+    }
 
     /**
      * returns the DataStructures.Models.Student as a String
