@@ -14,6 +14,7 @@ import javafx.scene.paint.Color;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class StudentUpdateController implements Initializable {
 
@@ -53,8 +54,14 @@ public class StudentUpdateController implements Initializable {
     @FXML
     private Button addCourseButton;
 
-    private ArrayList<Student> allStudents;
+    @FXML
+    private RadioButton allStudentRadioButton;
 
+    @FXML
+    private RadioButton honourRollRadioButton;
+
+    private ArrayList<Student> allStudents;
+    private ToggleGroup toggleGroup;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -66,15 +73,34 @@ public class StudentUpdateController implements Initializable {
         lastNameCol.setCellValueFactory(new PropertyValueFactory<>("lastName"));
         avgGradeCol.setCellValueFactory(new PropertyValueFactory<>("avgGradeString"));
         numOfCoursesCol.setCellValueFactory(new PropertyValueFactory<>("numOfCourses"));
-        System.out.println(tableView.getItems().addAll(allStudents));
+        tableView.getItems().addAll(allStudents);
+        updateLabels();
 
         //configure the search textfield to filter the objects in the
-        //tableview
-        searchTextField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observableValue,
-                                String oldString, String searchText) {
+//        //tableview.  This is using an anonymous inner class
+//        searchTextField.textProperty().addListener(new ChangeListener<String>() {
+//            @Override
+//            public void changed(ObservableValue<? extends String> observableValue,
+//                                String oldString, String searchText) {
+//
+//                ArrayList<Student> filtered = new ArrayList<>();
+//                for (Student student:allStudents)
+//                {
+//                    if (student.contains(searchText))
+//                        filtered.add(student);
+//                }
+//
+//                //clear the ObservableList from the tableview and add in ONLY
+//                //the filtered students
+//                tableView.getItems().clear();
+//                tableView.getItems().addAll(filtered);
+//                updateLabels();
+//            }
+//        });
 
+        //Search functionality, with a lambda expression
+        searchTextField.textProperty().addListener((observableValue, oldString, searchText)->
+            {
                 ArrayList<Student> filtered = new ArrayList<>();
                 for (Student student:allStudents)
                 {
@@ -86,8 +112,34 @@ public class StudentUpdateController implements Initializable {
                 //the filtered students
                 tableView.getItems().clear();
                 tableView.getItems().addAll(filtered);
+                updateLabels();
+            });
+
+        //configure the RadioButton's and ToggleGroup
+        toggleGroup = new ToggleGroup();
+        allStudentRadioButton.setToggleGroup(toggleGroup);
+        honourRollRadioButton.setToggleGroup(toggleGroup);
+        allStudentRadioButton.setUserData("allStudents");
+        honourRollRadioButton.setUserData("honourRoll");
+
+        //add a change listener to the ToggleGroup
+        toggleGroup.selectedToggleProperty().addListener((obs, oldButton, buttonSelected)->{
+            String button = buttonSelected.getUserData().toString();
+            tableView.getItems().clear();
+
+            if (button.equalsIgnoreCase("honourRoll"))
+            {
+                tableView.getItems().addAll(//stream that filters for honour roll
+                        allStudents.stream()
+                                    .filter(student -> student.getAvgMark()>= 80)
+                                    .collect(Collectors.toList()));
             }
+            else if (button.equals("allStudents"))
+                tableView.getItems().addAll(allStudents);
+
+            updateLabels();
         });
+
 
         //Configure the combobox
         coursesComboBox.setPromptText("Select a course");
@@ -111,7 +163,7 @@ public class StudentUpdateController implements Initializable {
 
     private void updateLabels()
     {
-
+        rowsReturnedLabel.setText("Rows Returned: "+tableView.getItems().size());
     }
 
     @FXML
